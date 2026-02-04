@@ -20,6 +20,7 @@ dynamics, and geometry optimization, built on top of Psi4.
 - NumPy
 - SciPy
 - opt_einsum
+- pytest
 
 ## Installation
 
