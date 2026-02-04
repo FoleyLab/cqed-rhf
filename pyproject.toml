@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cqed-rhf"
+version = "0.1.0"
+description = "CQED-RHF mean-field energy and gradients for the Pauli–Fierz Hamiltonian"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Your Name", email = "your.email@institution.edu" }
+]
+
+requires-python = ">=3.9"
+
+dependencies = [
+    "numpy",
+    "opt-einsum",
+    # DO NOT list psi4 here unless you *really* want pip to try installing it
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "License :: OSI Approved :: MIT License"
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/cqed-rhf"
+

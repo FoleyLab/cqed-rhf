@@ -1,0 +1,32 @@
+Metadata-Version: 2.4
+Name: cqed-rhf
+Version: 0.1.0
+Summary: CQED-RHF mean-field energy and gradients for the Pauli–Fierz Hamiltonian
+Author-email: Your Name <your.email@institution.edu>
+License: MIT
+Project-URL: Homepage, https://github.com/yourusername/cqed-rhf
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Scientific/Engineering :: Chemistry
+Classifier: License :: OSI Approved :: MIT License
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: numpy
+Requires-Dist: opt-einsum
+
+# cqed-rhf
+
+CQED-RHF mean-field energy and analytic nuclear gradients for the Pauli–Fierz Hamiltonian,
+implemented on top of Psi4.
+
+## Requirements
+
+- Python >= 3.9
+- Psi4 (via conda or system install)
+- NumPy
+- opt-einsum
+
+## Installation
+
+```bash
+pip install cqed-rhf
+

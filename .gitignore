@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.xyz
+*.out
+*.dat
+*.npy
+psi.*.clean
+*.clean
+.DS_Store
+.ipynb_checkpoints/
+
