@@ -22,6 +22,7 @@ ortho_coords = [
 ]
 def make_geometry(coords):
     return "\n".join(coords) + """
+1 1
 units angstrom
 no_reorient
 no_com
