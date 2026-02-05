@@ -44,6 +44,7 @@ class CQEDRHFSCF:
         self.omega = omega
 
     def run(self):
+        print("Starting CQED-RHF SCF calculation...")
         psi4.set_options(self.psi4_options)
         mol = psi4.geometry(self.geometry)
 
@@ -91,9 +92,10 @@ class CQEDRHFSCF:
 
         diis = DIISSubspace(max_dim=8)
         Eold = 0.0
+        I = np.asarray(mints.ao_eri())
 
         for it in range(1, 501):
-            I = np.asarray(mints.ao_eri())
+            
             J = oe.contract("pqrs,rs->pq", I, D, optimize="optimal")
             K = oe.contract("prqs,rs->pq", I, D, optimize="optimal")
             N = oe.contract("pr,qs,rs->pq", d_ao, d_ao, D, optimize="optimal")
@@ -103,9 +105,12 @@ class CQEDRHFSCF:
             err = F @ D @ S - S @ D @ F
             diis.add(err, F)
 
+            diss_e = A.dot(err).dot(A)
+            dRMS = np.mean(diss_e**2) ** 0.5
+
             E = oe.contract("pq,pq->", F + H, D) + Enuc
 
-            if abs(E - Eold) < self.psi4_options.get("e_convergence", 1e-7):
+            if abs(E - Eold) < self.psi4_options.get("e_convergence", 1e-7) and dRMS < self.psi4_options.get("d_convergence", 1e-7):
                 break
             Eold = E
 

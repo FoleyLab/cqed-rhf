@@ -1,6 +1,6 @@
 import numpy as np
 import psi4
-
+psi4.core.be_quiet()
 from cqed_rhf import CQEDRHFCalculator
 
 para_coords = [
@@ -33,22 +33,23 @@ symmetry c1
 def run():
     geometry = make_geometry(para_coords)
 
-    field_vectors = {
-        "z_pol":  [0.0, 0.0, 0.1],
-        "x_pol":  [0.1, 0.0, 0.0],
-        "y_pol":  [0.0, 0.1, 0.0],
-        "diag":   [0.078, 0.055, 0.027],
-    }
-    basis_sets = ["6-31G", "6-311G*"]
+#    field_vectors = {
+#        "z_pol":  [0.0, 0.0, 0.1],
+#        "x_pol":  [0.1, 0.0, 0.0],
+#        "y_pol":  [0.0, 0.1, 0.0],
+#        "diag":   [0.078, 0.055, 0.027],
+#    }
+    field_vectors = {"diag": [0.078, 0.055, 0.027]}
+    basis_sets = ["sto-3g", "6-31G"]
 
     for basis in basis_sets:
         print(f"\n===== PARA | basis = {basis} =====")
 
         psi4_options = {
             "basis": basis,
-            "scf_type": "df",
-            "e_convergence": 1e-8,
-            "d_convergence": 1e-8,
+            "scf_type": "pk",
+            "e_convergence": 1e-12,
+            "d_convergence": 1e-12,
         }
 
         for label, lam in field_vectors.items():

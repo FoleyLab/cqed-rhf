@@ -1,6 +1,7 @@
 import numpy as np
 import opt_einsum as oe
 import psi4
+import time 
 
 
 class CQEDRHFGradient:
@@ -45,14 +46,22 @@ class CQEDRHFGradient:
 
     def compute(self, scf):
         if self.canonical == "psi4":
+            t0 = time.time()
             grad = self._canonical_gradient_psi4(scf)
+            print("Psi4 canonical gradient time: {:.4f} s".format(time.time() - t0))
         elif self.canonical == "exact":
+            t0 = time.time()
             grad = self._canonical_gradient_exact(scf)
+            print("Exact canonical gradient time: {:.4f} s".format(time.time() - t0))
         else:
             raise ValueError("canonical must be 'psi4' or 'exact'")
-
+        
+        t0 = time.time()
         grad += self._quadrupole_gradient(scf)
+        print("Quadrupole gradient time: {:.4f} s".format(time.time() - t0))
+        t0 = time.time()
         grad += self._dipole_dipole_gradient(scf)
+        print("Dipole–dipole gradient time: {:.4f} s".format(time.time() - t0))
 
         return grad
 
@@ -107,8 +116,10 @@ class CQEDRHFGradient:
             Tder = mints.ao_oei_deriv1("KINETIC", A)
             Vder = mints.ao_oei_deriv1("POTENTIAL", A)
             for cart in range(3):
-                tval = np.einsum("uv,uv", D, Tder[cart])
-                vval = np.einsum("uv,uv", D, Vder[cart])
+                #tval = np.einsum("uv,uv", D, Tder[cart])
+                tval = oe.contract("uv,uv->", D, np.asarray(Tder[cart]), optimize="optimal")
+                #vval = np.einsum("uv,uv", D, Vder[cart])
+                vval = oe.contract("uv,uv->", D, np.asarray(Vder[cart]), optimize="optimal")
                 grad[A, cart] += tval + vval
                 if self.debug:
                     T_grad[A, cart] += tval
@@ -120,10 +131,14 @@ class CQEDRHFGradient:
             tei = mints.ao_tei_deriv1(A)
             for cart in range(3):
                 eri = np.asarray(tei[cart]).reshape(nbf, nbf, nbf, nbf)
-                J = np.einsum("uvls,ls->uv", eri, D, optimize="optimal")
-                K = -0.5 * np.einsum("ulvs,ls->uv", eri, D, optimize="optimal")
-                jval = 0.5 * np.einsum("uv,uv", D, J, optimize="optimal")
-                kval = 0.5 * np.einsum("uv,uv", D, K, optimize="optimal")
+                #J = np.einsum("uvls,ls->uv", eri, D, optimize="optimal")
+                J = oe.contract("uvls,ls->uv", eri, D, optimize="optimal")
+                #K = -0.5 * np.einsum("ulvs,ls->uv", eri, D, optimize="optimal")
+                K = -0.5 * oe.contract("ulvs,ls->uv", eri, D, optimize="optimal")
+                #jval = 0.5 * np.einsum("uv,uv", D, J, optimize="optimal")
+                #kval = 0.5 * np.einsum("uv,uv", D, K, optimize="optimal")
+                jval = 0.5 * oe.contract("uv,uv->", D, J, optimize="optimal")
+                kval = 0.5 * oe.contract("uv,uv->", D, K, optimize="optimal")
                 grad[A, cart] += jval + kval
                 if self.debug:
                     J_grad[A, cart] += jval
