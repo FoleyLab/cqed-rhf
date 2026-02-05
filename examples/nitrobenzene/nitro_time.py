@@ -19,8 +19,8 @@ psi4.core.be_quiet()
 
 
 psi4_options = {
-    "basis": "6-31G",
-    "scf_type": "pk",
+    "basis": "6-311G*",
+    "scf_type": "df",
     "save_jk": True,          # density fitting (matches intent of old example)
     "e_convergence": 1e-12,
     "d_convergence": 1e-12,
@@ -90,6 +90,7 @@ calc = CQEDRHFCalculator(
     lambda_vector=lambda_vector,
     psi4_options=psi4_options,
     omega=omega,
+    density_fitting=True
 )
 print(f"instantiated in {time.time()-t0:.3f} s\n")
 

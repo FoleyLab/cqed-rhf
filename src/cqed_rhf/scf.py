@@ -37,22 +37,29 @@ class DIISSubspace:
 
 
 class CQEDRHFSCF:
-    def __init__(self, geometry, lambda_vector, psi4_options, omega):
+    def __init__(self, geometry, lambda_vector, psi4_options, omega, density_fitting=False):
         self.geometry = geometry
         self.lambda_vector = np.asarray(lambda_vector)
         self.psi4_options = psi4_options
         self.omega = omega
+        self.density_fitting = density_fitting  
 
     def run(self):
         print("Starting CQED-RHF SCF calculation...")
+        if self.density_fitting:
+            print("Using density fitting for two-electron integrals.")
+        else:
+            print("Using full two-electron integrals.")
         psi4.set_options(self.psi4_options)
         mol = psi4.geometry(self.geometry)
+        # store as attribute
+        self.mol = mol
 
         # Reference RHF
         rhf_energy, wfn = psi4.energy("scf", return_wfn=True)
         self.wfn = wfn
 
-        mints = psi4.core.MintsHelper(wfn.basisset())
+        self.mints = psi4.core.MintsHelper(wfn.basisset())
 
         ndocc = wfn.nalpha()
         nbf = wfn.nmo()
@@ -61,17 +68,17 @@ class CQEDRHFSCF:
         Cocc = C[:, :ndocc]
         D = oe.contract("pi,qi->pq", Cocc, Cocc, optimize="optimal")
 
-        T = np.asarray(mints.ao_kinetic())
-        V = np.asarray(mints.ao_potential())
-        S = np.asarray(mints.ao_overlap())
-
-        mu_ao = np.asarray(mints.ao_dipole())
+        T = np.asarray(self.mints.ao_kinetic())
+        V = np.asarray(self.mints.ao_potential())
+        S = np.asarray(self.mints.ao_overlap())
+    
+        mu_ao = np.asarray(self.mints.ao_dipole())
 
         mu_nuc = np.array([mol.nuclear_dipole()[0], mol.nuclear_dipole()[1], mol.nuclear_dipole()[2]])
         d_ao = sum(self.lambda_vector[i] * mu_ao[i] for i in range(3))
 
         # Quadrupole
-        Q = [np.asarray(x) for x in mints.ao_quadrupole()]
+        Q = [np.asarray(x) for x in self.mints.ao_quadrupole()]
         Q_PF = (
             -0.5 * self.lambda_vector[0] ** 2 * Q[0]
             -0.5 * self.lambda_vector[1] ** 2 * Q[3]
@@ -92,12 +99,20 @@ class CQEDRHFSCF:
 
         diis = DIISSubspace(max_dim=8)
         Eold = 0.0
-        I = np.asarray(mints.ao_eri())
+
+        if self.density_fitting:
+            self.build_density_fitting_intermediates() # <-- assigns self.Qpq
+        else:
+            self.I = np.asarray(self.mints.ao_eri())
 
         for it in range(1, 501):
+            if self.density_fitting:
+                J, K = self._build_JK_df(D)
+            else:
+                J, K = self._build_JK_ao(D)
             
-            J = oe.contract("pqrs,rs->pq", I, D, optimize="optimal")
-            K = oe.contract("prqs,rs->pq", I, D, optimize="optimal")
+            #J = oe.contract("pqrs,rs->pq", self.I, D, optimize="optimal")
+            #K = oe.contract("prqs,rs->pq", self.I, D, optimize="optimal")
             N = oe.contract("pr,qs,rs->pq", d_ao, d_ao, D, optimize="optimal")
 
             F = H + 2 * J - K - N
@@ -133,7 +148,7 @@ class CQEDRHFSCF:
             density=D,
             coefficients=C,
             orbital_energies=eps,
-            mints=mints,
+            mints=self.mints,
             wfn=wfn, #<-- Note this is the wfn from converged RHF, not CQED-RHF
             dipole_el=mu_el,
             dipole_nuc=mu_nuc,
@@ -146,4 +161,150 @@ class CQEDRHFSCF:
         )
 
         return E, results
+    
+    
 
+    def build_density_fitting_intermediates(self):
+        mol = self.mol              # reuse molecule
+        orbital_basis = self.psi4_options["basis"]
+
+        aux_basis = self.select_aux_basis(orbital_basis)
+
+        aux = psi4.core.BasisSet.build(
+            mol, "DF_BASIS_SCF", aux_basis, "JKFIT", orbital_basis
+        )
+
+        orb = self.wfn.basisset()
+        zero = psi4.core.BasisSet.zero_ao_basis_set()
+        mints = self.mints
+
+        Ppq = mints.ao_eri(aux, zero, orb, orb)
+        metric = mints.ao_eri(aux, zero, aux, zero)
+
+        metric.power(-0.5, 1.e-14)
+
+        Ppq = np.squeeze(Ppq)
+        metric = np.squeeze(metric)
+
+        self.Qpq = oe.contract("QP,Ppq->Qpq", metric, Ppq, optimize="optimal")
+
+
+    def select_aux_basis(self, orbital_basis: str) -> str:
+        """
+        Select an appropriate JKFIT auxiliary basis for a given orbital basis.
+
+        Parameters
+        ----------
+        orbital_basis : str
+            Orbital basis set name (Psi4-style string).
+
+        Returns
+        -------
+        aux_basis : str
+            Auxiliary JKFIT basis set name.
+
+        Raises
+        ------
+        ValueError
+            If no suitable auxiliary basis is known.
+        """
+
+        # Normalize for safety (Psi4 basis names are case-insensitive,
+        # but users are not always consistent)
+        b = orbital_basis.strip()
+
+        # --- Special minimal basis ---
+        if b.lower() == "sto-3g":
+            return "def2-universal-jkfit"
+
+        # --- Double-zeta (no diffuse) ---
+        double_zeta = {
+            "6-31G",
+            "6-31G*",
+            "6-31G**",
+            "6-31G(d)",
+            "6-31G(d,p)",
+            "cc-pVDZ",
+        }
+
+        # --- Double-zeta, diffuse on heavy atoms ---
+        heavy_double_zeta = {
+            "6-31+G",
+            "6-31+G*",
+            "6-31+G**",
+            "6-31+G(d)",
+            "6-31+G(d,p)",
+        }
+
+        # --- Double-zeta, diffuse on all atoms ---
+        aug_double_zeta = {
+            "6-31++G",
+            "6-31++G*",
+            "6-31++G**",
+            "aug-cc-pVDZ",
+        }
+
+        # --- Triple-zeta (no diffuse) ---
+        triple_zeta = {
+            "6-311G",
+            "6-311G*",
+            "6-311G**",
+            "cc-pVTZ",
+        }
+
+        # --- Triple-zeta, diffuse on heavy atoms ---
+        heavy_triple_zeta = {
+            "6-311+G",
+            "6-311+G*",
+            "6-311+G**",
+        }
+
+        # --- Triple-zeta, diffuse on all atoms ---
+        aug_triple_zeta = {
+            "6-311++G",
+            "6-311++G*",
+            "6-311++G**",
+            "aug-cc-pVTZ",
+        }
+
+        # --- Selection logic ---
+        if b in double_zeta:
+            return "cc-pvdz-jkfit"
+
+        if b in heavy_double_zeta:
+            return "heavy-aug-cc-pvdz-jkfit"
+
+        if b in aug_double_zeta:
+            return "aug-cc-pvdz-jkfit"
+
+        if b in triple_zeta:
+            return "cc-pvtz-jkfit"
+
+        if b in heavy_triple_zeta:
+            return "heavy-aug-cc-pvtz-jkfit"
+
+        if b in aug_triple_zeta:
+            return "aug-cc-pvtz-jkfit"
+
+        # --- Fallback ---
+        raise ValueError(
+            f"No density-fitting auxiliary basis known for orbital basis '{orbital_basis}'. "
+            "Please add it to select_aux_basis()."
+        )
+
+    def _build_JK_df(self, D):
+        Qpq = self.Qpq # local binding, no copy
+
+        X_Q = oe.contract("Qpq,pq->Q",Qpq, D, optimize="optimal")
+        J = oe.contract("Qpq,Q->pq", Qpq, X_Q, optimize="optimal")
+
+        Z_Qqr = oe.contract("Qrs,sq->Qrq", Qpq, D, optimize="optimal")
+        K = oe.contract("Qpq,Qrq->pr", Qpq, Z_Qqr, optimize="optimal")
+
+        return J, K
+
+    def _build_JK_ao(self, D):
+        I = self.I  # local binding, no copy 
+        J = oe.contract("pqrs,rs->pq", I, D, optimize="optimal")
+        K = oe.contract("prqs,rs->pq", I, D, optimize="optimal")
+        return J, K
