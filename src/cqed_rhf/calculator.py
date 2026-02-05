@@ -15,7 +15,7 @@ class CQEDRHFCalculator:
             geometry, self.lambda_vector, self.psi4_options, self.omega
         )
         E, _ = scf.run()
-        #psi4.core.clean()
+        psi4.core.clean()
         return E
 
     def energy_and_gradient(self, geometry, canonical="psi4"):
@@ -36,10 +36,10 @@ class CQEDRHFCalculator:
         t0 = time.time()
         grad = grad_engine.compute(data)
         print("Gradient computation time: {:.4f} s".format(time.time() - t0))
-        #g = (self.omega / 2) ** 0.5 * data["d_exp"]
+        g = (self.omega / 2) ** 0.5 * data["d_exp"]
 
-        #psi4.core.clean()
-        #psi4.core.clean_options()
-        return E, grad #, g
+        psi4.core.clean()
+        psi4.core.clean_options()
+        return E, grad,  g
 
 

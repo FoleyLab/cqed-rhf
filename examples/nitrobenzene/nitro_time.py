@@ -19,7 +19,7 @@ psi4.core.be_quiet()
 
 
 psi4_options = {
-    "basis": "sto-3g",
+    "basis": "6-31G",
     "scf_type": "pk",
     "save_jk": True,          # density fitting (matches intent of old example)
     "e_convergence": 1e-12,
@@ -98,7 +98,7 @@ print("CQED-RHF single-point energy + gradient")
 print("=" * 70)
 
 t0 = time.time()
-E, grad = calc.energy_and_gradient(
+E, grad, g = calc.energy_and_gradient(
     mol_string,
     canonical="psi4",   # matches old: use Psi4 canonical gradient
 )
