@@ -5,12 +5,17 @@ import time
 
 
 class CQEDRHFCalculator:
-    def __init__(self, lambda_vector, psi4_options, omega=0.1, density_fitting=False, debug=False):
+    def __init__(self, lambda_vector, psi4_options, omega=0.1, charge=0, multiplicity=1, density_fitting=False, debug=False):
         self.lambda_vector = lambda_vector
         self.psi4_options = psi4_options
         self.omega = omega
         self.density_fitting = density_fitting
         self.debug = debug
+        self.charge = charge
+        self.multiplicity = multiplicity
+
+        if multiplicity !=1:
+            raise NotImplementedError("Only multiplicity=1 is currently supported.")
 
     def energy(self, geometry):
         scf = CQEDRHFSCF(

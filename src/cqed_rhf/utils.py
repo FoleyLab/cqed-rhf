@@ -24,7 +24,7 @@ def bohr_to_angstrom(x):
 # Geometry builders
 # =========================
 
-def build_psi4_geometry(coords, symbols, units="angstrom", symmetry="c1"):
+def build_psi4_geometry(coords, symbols, charge=0, multiplicity=1, units="angstrom", symmetry="c1"):
     """
     Build a Psi4 geometry string from coordinates.
 
@@ -50,6 +50,7 @@ def build_psi4_geometry(coords, symbols, units="angstrom", symmetry="c1"):
         coords = bohr_to_angstrom(coords)
 
     lines = []
+    lines.append(f"{charge} {multiplicity}")
     for sym, (x, y, z) in zip(symbols, coords):
         lines.append(f"{sym} {x:.12f} {y:.12f} {z:.12f}")
 
@@ -72,9 +73,22 @@ def parse_psi4_geometry(geometry):
     """
     symbols = []
     coords = []
+    charge = 0
+    multiplicity = 1
 
     for line in geometry.splitlines():
         parts = line.strip().split()
+        if not parts:
+            continue
+
+        # charge multiplicity line
+        if len(parts) == 2 and _is_int(parts[0]) and _is_int(parts[1]):
+            
+            charge = int(parts[0])
+            multiplicity = int(parts[1])
+            continue
+
+        # atom line
         if len(parts) == 4:
             try:
                 x, y, z = map(float, parts[1:])
@@ -83,7 +97,7 @@ def parse_psi4_geometry(geometry):
             except ValueError:
                 pass
 
-    return symbols, np.asarray(coords)
+    return symbols, np.asarray(coords), charge, multiplicity
 
 
 # =========================
@@ -127,6 +141,8 @@ def finite_difference_gradient(
     calculator,
     coords_angstrom,
     symbols,
+    charge,
+    multiplicity,
     delta=1.0e-4,
 ):
     """
@@ -153,10 +169,10 @@ def finite_difference_gradient(
             disp[i, j] = delta
 
             geom_p = build_psi4_geometry(
-                coords_angstrom + disp, symbols, units="angstrom"
+                coords_angstrom + disp, symbols, units="angstrom", charge=charge, multiplicity=multiplicity
             )
             geom_m = build_psi4_geometry(
-                coords_angstrom - disp, symbols, units="angstrom"
+                coords_angstrom - disp, symbols, units="angstrom", charge=charge, multiplicity=multiplicity
             )
 
             Ep = calculator.energy(geom_p)
@@ -169,6 +185,8 @@ def finite_difference_gradient(
 def finite_difference_gradient_from_geometry(
     calculator,
     geometry,
+    charge,
+    multiplicity,
     delta=1.0e-4,
 ):
     """
@@ -176,11 +194,13 @@ def finite_difference_gradient_from_geometry(
 
     Returns gradient in Hartree / bohr.
     """
-    symbols, coords = parse_psi4_geometry(geometry)
+    symbols, coords, charge, multiplicity = parse_psi4_geometry(geometry)
     return finite_difference_gradient(
         calculator,
         coords_angstrom=coords,
         symbols=symbols,
+        charge=charge,
+        multiplicity=multiplicity,
         delta=delta,
     )
 
@@ -217,3 +237,9 @@ def write_xyz(
         for sym, (x, y, z) in zip(symbols, coords_angstrom):
             f.write(f"{sym:2s} {x: .10f} {y: .10f} {z: .10f}\n")
 
+def _is_int(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False

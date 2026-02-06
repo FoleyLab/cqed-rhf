@@ -86,7 +86,7 @@ def velocity_verlet_md(
         coords_bohr = coords * ANGSTROM_TO_BOHR
 
         # Build temporary molecule to get masses
-        geom = build_psi4_geometry(coords, symbols, units="angstrom")
+        geom = build_psi4_geometry(coords, symbols, units="angstrom", charge=calculator.charge, multiplicity=calculator.multiplicity)
         mol = psi4.geometry(geom)
 
         masses = np.array([mol.mass(i) for i in range(mol.natom())]) * AMU_TO_AU
@@ -132,7 +132,7 @@ def velocity_verlet_md(
 
         # Back to angstroms for Psi4
         coords_angstrom = coords_bohr / ANGSTROM_TO_BOHR
-        geom = build_psi4_geometry(coords_angstrom, symbols, units="angstrom")
+        geom = build_psi4_geometry(coords_angstrom, symbols, units="angstrom", charge=calculator.charge, multiplicity=calculator.multiplicity)
 
         # New forces
         E, grad, g = calculator.energy_and_gradient(
@@ -148,7 +148,7 @@ def velocity_verlet_md(
             dict(
                 step=step,
                 energy=E,
-                coords=coords.copy(),
+                coords=coords_angstrom.copy(),
                 velocities=velocities.copy(),
                 forces=forces.copy(),
                 coupling=g,
@@ -200,12 +200,19 @@ def bfgs_optimize(
     symbols = [mol.symbol(i) for i in range(mol.natom())]
     x0_bohr = mol.geometry().to_array()
 
+    if mol.molecular_charge() != calculator.charge:
+        raise ValueError("Charge mismatch between geometry and calculator")
+
+    if mol.multiplicity() != calculator.multiplicity:
+        raise ValueError("Multiplicity mismatch between geometry and calculator")
+
+
     def objective(x_flat):
         coords_bohr = x_flat.reshape(-1, 3)
         coords_angstrom = coords_bohr / ANGSTROM_TO_BOHR
 
         geom = build_psi4_geometry(
-            coords_angstrom, symbols, units="angstrom"
+            coords_angstrom, symbols, units="angstrom", charge=calculator.charge, multiplicity=calculator.multiplicity
         )
 
         E, grad, g = calculator.energy_and_gradient(
