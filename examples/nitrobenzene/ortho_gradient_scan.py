@@ -1,6 +1,6 @@
 import numpy as np
 import psi4
-
+psi4.core.be_quiet()
 from cqed_rhf import CQEDRHFCalculator
 
 ortho_coords = [
@@ -38,7 +38,7 @@ def run():
         "y_pol":  [0.0, 0.1, 0.0],
         "diag":   [0.078, 0.055, 0.027],
     }
-    basis_sets = ["6-31G", "6-311G*"]
+    basis_sets = ["6-31G*", "6-311G*"]
 
     for basis in basis_sets:
         print(f"\n===== ORTHO | basis = {basis} =====")
@@ -46,8 +46,8 @@ def run():
         psi4_options = {
             "basis": basis,
             "scf_type": "df",
-            "e_convergence": 1e-8,
-            "d_convergence": 1e-8,
+            "e_convergence": 1e-12,
+            "d_convergence": 1e-12,
         }
 
         for label, lam in field_vectors.items():
@@ -55,6 +55,7 @@ def run():
                 lambda_vector=lam,
                 psi4_options=psi4_options,
                 omega=0.1,
+                density_fitting=True
             )
 
             E, grad, _ = calc.energy_and_gradient(

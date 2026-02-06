@@ -21,10 +21,11 @@ symmetry c1
 
 psi4_options = {
     "basis": "cc-pVDZ",
-    "scf_type": "pk",
+    "scf_type": "df",
     "e_convergence": 1e-10,
     "d_convergence": 1e-10,
     "geom_maxiter": 50,
+    "g_convergence" : "gau_verytight",
 }
 
 psi4.set_options(psi4_options)
@@ -66,13 +67,14 @@ from cqed_rhf.utils import ANGSTROM_TO_BOHR
 # CQED parameters (no cavity)
 # =========================
 
-lambda_vector = [0.0, 0.0, 0.0]
+lambda_vector = [0., 0., 0.]
 omega = 0.1  # irrelevant when lambda = 0
 
 calc = CQEDRHFCalculator(
     lambda_vector=lambda_vector,
     psi4_options=psi4_options,
     omega=omega,
+    density_fitting=True
 )
 
 # =========================
@@ -82,7 +84,7 @@ calc = CQEDRHFCalculator(
 opt_cqed = bfgs_optimize(
     calculator=calc,
     geometry=h2o_string,
-    canonical="exact",   # exact gradients for clean comparison
+    canonical="psi4",   # exact gradients for clean comparison
     gtol=1e-6,
     maxiter=50,
     debug=False,

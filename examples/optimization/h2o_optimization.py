@@ -32,8 +32,8 @@ symmetry c1
 psi4_options = {
     "basis": "cc-pVDZ",
     "scf_type": "pk",
-    "e_convergence": 1e-10,
-    "d_convergence": 1e-10,
+    "e_convergence": 1e-12,
+    "d_convergence": 1e-12,
 }
 
 psi4.set_options(psi4_options)
@@ -42,7 +42,7 @@ psi4.set_options(psi4_options)
 # Cavity parameters
 # =========================
 
-lambda_vector = [0.0, 0.0, 0.05]   # polarization along z
+lambda_vector = [0.1, 0.1, 0.1]   # polarization along z
 omega = 0.1                       # cavity frequency (a.u.)
 
 # =========================
@@ -53,13 +53,14 @@ calc = CQEDRHFCalculator(
     lambda_vector=lambda_vector,
     psi4_options=psi4_options,
     omega=omega,
+    density_fitting=False,
 )
 
 # =========================
 # Prepare XYZ output
 # =========================
 
-xyz_file = "h2o_cavity_opt.xyz"
+xyz_file = "h2o_cavity_opt_pk.xyz"
 
 # Clear old trajectory if it exists
 open(xyz_file, "w").close()
@@ -78,7 +79,7 @@ opt_result = bfgs_optimize(
     calculator=calc,
     geometry=h2o_string,
     canonical="exact",   # use exact gradients for optimization
-    gtol=1e-5,
+    gtol=1e-6,
     maxiter=50,
     debug=True,          # <-- enables XYZ writing + detailed output
 )

@@ -37,12 +37,13 @@ class DIISSubspace:
 
 
 class CQEDRHFSCF:
-    def __init__(self, geometry, lambda_vector, psi4_options, omega, density_fitting=False):
+    def __init__(self, geometry, lambda_vector, psi4_options, omega, density_fitting=False, debug=False):
         self.geometry = geometry
         self.lambda_vector = np.asarray(lambda_vector)
         self.psi4_options = psi4_options
         self.omega = omega
         self.density_fitting = density_fitting  
+        self.debug = debug
 
     def run(self):
         print("Starting CQED-RHF SCF calculation...")
@@ -125,7 +126,8 @@ class CQEDRHFSCF:
 
             E = oe.contract("pq,pq->", F + H, D) + Enuc
 
-            print(F"CQED Iter {it:3d}: E = {E:.10f}  dE = {E - Eold:.5e}  dRMS = {dRMS:.5e}")
+            if self.debug:
+                print(F"CQED Iter {it:3d}: E = {E:.10f}  dE = {E - Eold:.5e}  dRMS = {dRMS:.5e}")
 
             if abs(E - Eold) < self.psi4_options.get("e_convergence", 1e-7) and dRMS < self.psi4_options.get("d_convergence", 1e-7):
                 break
