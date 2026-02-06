@@ -27,9 +27,9 @@ PSI4_OPTIONS_DF = {
     "d_convergence": 1e-12,
 }
 
-ENERGY_TOL = 1e-8          # Hartree
-GRAD_TOL = 1e-6            # Ha / bohr
-DF_GRAD_DIFF_TOL = 1e-4    # Ha / bohr
+ENERGY_TOL = 1e-8          # Error tolerance between our rhf and psi4 rhf with density fitting ( Hartree )
+GRAD_TOL = 1e-7            # Error tolerance between our DF RHF gradient and Psi4s DF RHF gradient ( Ha / bohr ) 
+DF_GRAD_DIFF_TOL = 1e-4    # Error tolerance between our CQED-RHF gradient with DF and without DF ( Ha / bohr )
 EXPECTED_RHF_E = -76.04123648668632
 
 # =============================================================================
@@ -56,18 +56,20 @@ def test_df_energy_lambda_zero_matches_psi4():
         density_fitting=True,
     )
 
-    e_cqed, _, _ = calc.energy_and_gradient(
+    e_cqed_1 = calc.energy(H2O_GEOM)
+
+    e_cqed_2, _, _ = calc.energy_and_gradient(
         H2O_GEOM,
         canonical="psi4",
     )
 
-    assert np.isclose(e_cqed, EXPECTED_RHF_E)
-    assert np.isclose(e_psi4, EXPECTED_RHF_E)
+    assert abs(e_cqed_1 - e_psi4) < ENERGY_TOL, (
+        f"Energy mismatch: CQED={e_cqed_1:.10f}, Psi4={e_psi4:.10f}"
+    )
 
-    #assert abs(e_cqed - e_psi4) < ENERGY_TOL, (
-    #    f"Energy mismatch: CQED={e_cqed:.10f}, Psi4={e_psi4:.10f}"
-    #)
-
+    assert abs(e_cqed_2 - e_psi4) < ENERGY_TOL, (
+        f"Energy mismatch: CQED={e_cqed_2:.10f}, Psi4={e_psi4:.10f}"
+    )
 
 # =============================================================================
 # 2. Gradient regression: Psi4 DF RHF vs CQED-RHF (lambda = 0)
@@ -90,7 +92,7 @@ def test_df_gradient_lambda_zero_matches_psi4():
         lambda_vector=[0.0, 0.0, 0.0],
         omega=0.0,
         psi4_options=PSI4_OPTIONS_DF,
-        density_fitting=False,
+        density_fitting=True,
     )
 
     _, grad_cqed, _ = calc.energy_and_gradient(
@@ -150,7 +152,7 @@ def test_df_vs_canonical_cqed_gradient_consistency():
 
     _, grad_df, _ = calc_df.energy_and_gradient(
         H2O_GEOM,
-        canonical="exact",
+        canonical="psi4",
     )
 
     diff = grad_df - grad_can
