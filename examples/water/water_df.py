@@ -22,7 +22,7 @@ symmetry c1
 """
 
 PSI4_OPTIONS_DF = {
-    "basis": "6-311G*",
+    "basis": "6-31G",
     "scf_type": "df",
     "e_convergence": 1e-12,
     "d_convergence": 1e-12,

@@ -125,6 +125,8 @@ class CQEDRHFSCF:
 
             E = oe.contract("pq,pq->", F + H, D) + Enuc
 
+            print(F"CQED Iter {it:3d}: E = {E:.10f}  dE = {E - Eold:.5e}  dRMS = {dRMS:.5e}")
+
             if abs(E - Eold) < self.psi4_options.get("e_convergence", 1e-7) and dRMS < self.psi4_options.get("d_convergence", 1e-7):
                 break
             Eold = E
