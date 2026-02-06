@@ -242,6 +242,7 @@ class CQEDRHFSCF:
             "6-31++G*",
             "6-31++G**",
             "aug-cc-pVDZ",
+            "aug-cc-pvdz",
         }
 
         # --- Triple-zeta (no diffuse) ---
@@ -269,21 +270,27 @@ class CQEDRHFSCF:
 
         # --- Selection logic ---
         if b in double_zeta:
+            print( "Using density-fitting auxiliary basis 'cc-pvdz-jkfit' for orbital basis '{}'.".format(orbital_basis))
             return "cc-pvdz-jkfit"
 
         if b in heavy_double_zeta:
+            print( "Using density-fitting auxiliary basis 'heavy-aug-cc-pvdz-jkfit' for orbital basis '{}'.".format(orbital_basis))
             return "heavy-aug-cc-pvdz-jkfit"
 
         if b in aug_double_zeta:
+            print( "Using density-fitting auxiliary basis 'aug-cc-pvdz-jkfit' for orbital basis '{}'.".format(orbital_basis))
             return "aug-cc-pvdz-jkfit"
 
         if b in triple_zeta:
+            print( "Using density-fitting auxiliary basis 'cc-pvtz-jkfit' for orbital basis '{}'.".format(orbital_basis))
             return "cc-pvtz-jkfit"
 
         if b in heavy_triple_zeta:
+            print( "Using density-fitting auxiliary basis 'heavy-aug-cc-pvtz-jkfit' for orbital basis '{}'.".format(orbital_basis))
             return "heavy-aug-cc-pvtz-jkfit"
 
         if b in aug_triple_zeta:
+            print( "Using density-fitting auxiliary basis 'aug-cc-pvtz-jkfit' for orbital basis '{}'.".format(orbital_basis))
             return "aug-cc-pvtz-jkfit"
 
         # --- Fallback ---

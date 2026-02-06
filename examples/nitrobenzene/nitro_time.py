@@ -19,9 +19,9 @@ psi4.core.be_quiet()
 
 
 psi4_options = {
-    "basis": "6-311G*",
-    "scf_type": "df",
-    "save_jk": True,          # density fitting (matches intent of old example)
+    "basis": "6-31G",
+    "scf_type": "df",         # enable density fitting at psi4 level
+    "save_jk": True,          
     "e_convergence": 1e-12,
     "d_convergence": 1e-12,
 }
