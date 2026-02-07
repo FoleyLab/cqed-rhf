@@ -11,6 +11,7 @@ class CQEDRHFCalculator:
         self.omega = omega
         self.density_fitting = density_fitting
         self.debug = debug
+        
 
     def energy(self, geometry):
         scf = CQEDRHFSCF(
