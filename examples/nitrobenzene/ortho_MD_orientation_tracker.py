@@ -102,6 +102,10 @@ orientation_history = observer_data[orientation_tracker]
 phi = np.array([d["phi_deg"] for d in orientation_history])
 theta = np.array([d["theta_deg"] for d in orientation_history])
 
+for i in range(len(phi)):
+    print(f" phi   at step {i} is {phi[i]:.2f} deg")
+    print(f" theta at step {i} is {theta[i]:.2f} deg")
+
 print("\nFinal orientation:")
 print(f"  phi   = {phi[-1]:.2f} deg")
 print(f"  theta = {theta[-1]:.2f} deg")
