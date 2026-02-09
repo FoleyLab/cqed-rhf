@@ -10,6 +10,7 @@ from .utils import (
     AMU_TO_AU,
 )
 
+
 def initialize_md_from_geometry(geometry_string):
     """
     Initialize MD coordinates, symbols, and masses from a Psi4 geometry string.
@@ -41,6 +42,7 @@ def velocity_verlet_md(
     dt=10.0,
     nsteps=10,
     canonical="psi4",
+    observers=None,
     debug=False,
 ):
     """
@@ -57,13 +59,14 @@ def velocity_verlet_md(
         Atomic symbols.
     velocities : ndarray, shape (N,3), optional
         Initial velocities (bohr / a.u. time).
-        Defaults to zero.
     dt : float
         Time step in atomic units.
     nsteps : int
         Number of MD steps.
     canonical : {'psi4', 'exact'}
         Gradient backend.
+    observers : list, optional
+        Objects with an observe(coords_bohr) method.
     debug : bool
         Print energies each step.
 
@@ -71,17 +74,22 @@ def velocity_verlet_md(
     -------
     traj : list of dict
         Trajectory data.
+    observer_data : dict
+        Mapping observer -> list of observations.
     """
+
+    if observers is None:
+        observers = []
+
+    observer_data = {obs: [] for obs in observers}
 
     # -------------------------
     # Initialize system
     # -------------------------
     if geometry is not None:
-        # Psi4 geometry string is the source of truth
         coords_bohr, symbols, masses, mol = initialize_md_from_geometry(geometry)
 
     elif coords is not None and symbols is not None:
-        # User provided coords in angstroms
         coords = np.asarray(coords)
         coords_bohr = coords * ANGSTROM_TO_BOHR
 
@@ -104,13 +112,12 @@ def velocity_verlet_md(
     else:
         velocities = np.asarray(velocities)
 
-    # coords_bohr is now the authoritative MD position array
-
     # -------------------------
     # Initial forces
     # -------------------------
     coords_angstrom = coords_bohr / ANGSTROM_TO_BOHR
     geom = build_psi4_geometry(coords_angstrom, symbols, units="angstrom")
+
     E, grad, g = calculator.energy_and_gradient(
         geom, canonical=canonical
     )
@@ -130,7 +137,7 @@ def velocity_verlet_md(
         # Position update (bohr)
         coords_bohr += dt * velocities
 
-        # Back to angstroms for Psi4
+        # Rebuild geometry
         coords_angstrom = coords_bohr / ANGSTROM_TO_BOHR
         geom = build_psi4_geometry(coords_angstrom, symbols, units="angstrom", charge=calculator.charge, multiplicity=calculator.multiplicity)
 
@@ -143,12 +150,19 @@ def velocity_verlet_md(
         # Final half-step velocity update
         velocities -= 0.5 * dt * forces / masses[:, None]
 
+        # ---- Observers ----
+        for obs in observers:
+            observer_data[obs].append(
+                obs.observe(coords_bohr)
+            )
+
         # Store step
         traj.append(
             dict(
                 step=step,
                 energy=E,
                 coords=coords_angstrom.copy(),
+                coords_bohr=coords_bohr.copy(),
                 velocities=velocities.copy(),
                 forces=forces.copy(),
                 coupling=g,
@@ -162,7 +176,8 @@ def velocity_verlet_md(
                 f"|F| = {np.linalg.norm(forces):.4e}"
             )
 
-    return traj
+    return traj, observer_data
+
 
 def bfgs_optimize(
     calculator,
@@ -170,6 +185,7 @@ def bfgs_optimize(
     canonical="psi4",
     gtol=1e-5,
     maxiter=50,
+    observers=None,
     debug=False,
 ):
     """
@@ -186,6 +202,8 @@ def bfgs_optimize(
         Gradient norm tolerance (Ha/bohr).
     maxiter : int
         Maximum iterations.
+    observers : list, optional
+        Objects with an observe(coords_bohr) method.
     debug : bool
         Print progress.
 
@@ -193,7 +211,14 @@ def bfgs_optimize(
     -------
     result : OptimizeResult
         SciPy optimization result.
+    observer_data : dict
+        Mapping observer -> list of observations.
     """
+
+    if observers is None:
+        observers = []
+
+    observer_data = {obs: [] for obs in observers}
 
     # Parse initial geometry
     mol = psi4.geometry(geometry)
@@ -230,11 +255,19 @@ def bfgs_optimize(
 
         return E, grad.reshape(-1)
 
+    def callback(x_flat):
+        coords_bohr = x_flat.reshape(-1, 3)
+        for obs in observers:
+            observer_data[obs].append(
+                obs.observe(coords_bohr)
+            )
+
     result = minimize(
         fun=lambda x: objective(x)[0],
         x0=x0_bohr.reshape(-1),
         jac=lambda x: objective(x)[1],
         method="BFGS",
+        callback=callback,
         options=dict(
             gtol=gtol,
             maxiter=maxiter,
@@ -242,4 +275,5 @@ def bfgs_optimize(
         ),
     )
 
-    return result
+    return result, observer_data
+

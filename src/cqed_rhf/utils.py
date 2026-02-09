@@ -53,7 +53,7 @@ def build_psi4_geometry(coords, symbols, charge=0, multiplicity=1, units="angstr
     lines.append(f"{charge} {multiplicity}")
     for sym, (x, y, z) in zip(symbols, coords):
         lines.append(f"{sym} {x:.12f} {y:.12f} {z:.12f}")
-
+    lines.append("1 1") # charge and multiplicity (default to singlet)
     lines.append("units angstrom")
     lines.append("no_reorient")
     lines.append("no_com")
