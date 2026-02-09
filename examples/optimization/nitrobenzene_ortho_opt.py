@@ -5,7 +5,7 @@ using CQED-RHF + BFGS, with XYZ trajectory output.
 
 import numpy as np
 import psi4
-#psi4.core.be_quiet()
+psi4.core.be_quiet()
 
 from cqed_rhf import CQEDRHFCalculator
 from cqed_rhf.drivers import bfgs_optimize
@@ -67,6 +67,8 @@ calc = CQEDRHFCalculator(
     psi4_options=psi4_options,
     omega=omega,
     density_fitting=True,
+    charge=1,
+    multiplicity=1
 )
 
 # =========================

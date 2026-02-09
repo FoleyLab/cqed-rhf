@@ -141,8 +141,8 @@ def finite_difference_gradient(
     calculator,
     coords_angstrom,
     symbols,
-    charge,
-    multiplicity,
+    charge=0,
+    multiplicity=1,
     delta=1.0e-4,
 ):
     """
@@ -185,8 +185,8 @@ def finite_difference_gradient(
 def finite_difference_gradient_from_geometry(
     calculator,
     geometry,
-    charge,
-    multiplicity,
+    charge=0,
+    multiplicity=1,
     delta=1.0e-4,
 ):
     """
