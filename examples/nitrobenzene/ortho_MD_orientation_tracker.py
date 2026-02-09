@@ -4,12 +4,13 @@ import psi4
 from cqed_rhf.calculator import CQEDRHFCalculator
 from cqed_rhf.drivers import velocity_verlet_md
 from cqed_rhf.observables.nitrobenzene_orientation import NitrobenzeneOrientation
-
+from cqed_rhf.utils import write_xyz, ANGSTROM_TO_BOHR
 
 # ----------------------------
 # Molecular geometry (ortho)
 # ----------------------------
 ortho_string = """
+1 1
  C                  0.51932475    1.23303451   -0.03194925
  C                  1.94454413    1.26916358   -0.03672882
  C                  2.62037793    0.09283428   -0.02499003
@@ -25,7 +26,6 @@ ortho_string = """
  C                  1.96291176   -1.21653219   -0.02111314
  H                  2.44359113   -1.96306433    0.61513886
  Br                 2.17304025   -1.94912156   -1.90618750
-1 1
 units angstrom
 no_reorient
 no_com
@@ -37,17 +37,17 @@ symmetry c1
 # Cavity / field parameters
 # ----------------------------
 field_vector = np.array([0.078, 0.055, 0.027])
-omega = 0.1
+omega = 0.06615  
 
 
 # ----------------------------
 # Psi4 options
 # ----------------------------
 psi4_options = {
-    "basis": "6-31G*",
+    "basis": "6-311G*",
     "scf_type": "df",          # density fitting
-    "e_convergence": 1e-8,
-    "d_convergence": 1e-6,
+    "e_convergence": 1e-12,
+    "d_convergence": 1e-12,
 }
 
 psi4.set_memory("24 GB")
@@ -62,6 +62,8 @@ calculator = CQEDRHFCalculator(
     psi4_options=psi4_options,
     omega=omega,
     density_fitting=True,
+    charge=1,
+    multiplicity=1
 )
 
 
@@ -103,6 +105,7 @@ phi = np.array([d["phi_deg"] for d in orientation_history])
 theta = np.array([d["theta_deg"] for d in orientation_history])
 
 for i in range(len(phi)):
+    
     print(f" phi   at step {i} is {phi[i]:.2f} deg")
     print(f" theta at step {i} is {theta[i]:.2f} deg")
 
