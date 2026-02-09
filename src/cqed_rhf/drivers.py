@@ -30,6 +30,7 @@ def initialize_md_from_geometry(geometry_string):
     masses = np.array([mol.mass(i) for i in range(natom)]) * AMU_TO_AU
     coords_bohr = mol.geometry().to_array()
 
+
     return coords_bohr, symbols, masses, mol
 
 
@@ -87,9 +88,17 @@ def velocity_verlet_md(
     # Initialize system
     # -------------------------
     if geometry is not None:
+        print("Initializing from geometry string...")
+        print(geometry)
         coords_bohr, symbols, masses, mol = initialize_md_from_geometry(geometry)
+        calculator.charge = mol.molecular_charge()
+        calculator.multiplicity = mol.multiplicity()
 
     elif coords is not None and symbols is not None:
+        print("Initializing from coords and symbols...")
+        print("charge =", calculator.charge)
+        print("multiplicity =", calculator.multiplicity)
+        
         coords = np.asarray(coords)
         coords_bohr = coords * ANGSTROM_TO_BOHR
 
@@ -116,7 +125,7 @@ def velocity_verlet_md(
     # Initial forces
     # -------------------------
     coords_angstrom = coords_bohr / ANGSTROM_TO_BOHR
-    geom = build_psi4_geometry(coords_angstrom, symbols, units="angstrom")
+    geom = build_psi4_geometry(coords_angstrom, symbols, units="angstrom", charge=calculator.charge, multiplicity=calculator.multiplicity)
 
     E, grad, g = calculator.energy_and_gradient(
         geom, canonical=canonical

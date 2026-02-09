@@ -18,6 +18,7 @@ class CQEDRHFCalculator:
             raise NotImplementedError("Only multiplicity=1 is currently supported.")
 
     def energy(self, geometry):
+        self.geometry = geometry
         scf = CQEDRHFSCF(
             geometry, self.lambda_vector, self.psi4_options, self.omega, self.density_fitting, self.debug
         )
@@ -27,6 +28,7 @@ class CQEDRHFCalculator:
 
     def energy_and_gradient(self, geometry, canonical="psi4"):
         t0 = time.time()
+        self.geometry = geometry
         scf = CQEDRHFSCF(
             geometry, self.lambda_vector, self.psi4_options, self.omega, self.density_fitting, self.debug
         )
