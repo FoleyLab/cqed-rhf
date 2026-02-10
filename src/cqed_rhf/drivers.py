@@ -1,6 +1,7 @@
 import psi4
 import numpy as np
 from scipy.optimize import minimize
+import time
 
 from .utils import (
     build_psi4_geometry,
@@ -78,11 +79,14 @@ def velocity_verlet_md(
     observer_data : dict
         Mapping observer -> list of observations.
     """
-
+    t0 = time.time()
+    print(f"Starting MD simulation for {nsteps} steps with dt={dt:.2f} a.u. (started at {t0:.2f} s)"    )
     if observers is None:
         observers = []
 
     observer_data = {obs: [] for obs in observers}
+    t1 = time.time()
+    print(f"Observer Initialization took {t1 - t0:.2f} seconds.")
 
     # -------------------------
     # Initialize system
@@ -112,6 +116,8 @@ def velocity_verlet_md(
         raise ValueError("Provide either geometry or coords+symbols.")
 
     natom = len(symbols)
+    t2 = time.time()
+    print(f"Geometry Initialization took {t2 - t1:.2f} seconds.")
 
     # -------------------------
     # Velocities (bohr / a.u.)
@@ -126,10 +132,13 @@ def velocity_verlet_md(
     # -------------------------
     coords_angstrom = coords_bohr / ANGSTROM_TO_BOHR
     geom = build_psi4_geometry(coords_angstrom, symbols, units="angstrom", charge=calculator.charge, multiplicity=calculator.multiplicity)
-
+    t3 = time.time()
+    print(f"Initial Geometry Build took {t3 - t2:.2f} seconds")   
     E, grad, g = calculator.energy_and_gradient(
         geom, canonical=canonical
     )
+    t4 = time.time()
+    print(f"Initial Energy and Gradient Calculation took {t4 - t3:.2f} seconds")
 
     forces = -grad  # Hartree / bohr
 
@@ -139,6 +148,8 @@ def velocity_verlet_md(
     # MD loop
     # -------------------------
     for step in range(nsteps):
+        t5 = time.time()
+        print(f"Starting step {step} at {t5:.2f} seconds"   )
 
         # Half-step velocity update
         velocities -= 0.5 * dt * forces / masses[:, None]
@@ -149,11 +160,14 @@ def velocity_verlet_md(
         # Rebuild geometry
         coords_angstrom = coords_bohr / ANGSTROM_TO_BOHR
         geom = build_psi4_geometry(coords_angstrom, symbols, units="angstrom", charge=calculator.charge, multiplicity=calculator.multiplicity)
-
+        t6 = time.time()
+        print(f"Geometry Build for step {step} took {t6 - t5:.2f} seconds")
         # New forces
         E, grad, g = calculator.energy_and_gradient(
             geom, canonical=canonical
         )
+        t7 = time.time()
+        print(f"Energy and Gradient Calculation for step {step} took {t7 - t6:.2f} seconds")
         forces = -grad
 
         # Final half-step velocity update
@@ -164,6 +178,9 @@ def velocity_verlet_md(
             observer_data[obs].append(
                 obs.observe(coords_bohr)
             )
+
+        t8 = time.time()
+        print(f"Step {step} completed in {t8 - t5:.2f} seconds")
 
         # Store step
         traj.append(
@@ -177,7 +194,8 @@ def velocity_verlet_md(
                 coupling=g,
             )
         )
-
+        t9 = time.time()
+        print(f"Data storage for step {step} took {t9 - t8:.2f} seconds")
         if debug:
             print(
                 f"Step {step:4d} | "
