@@ -18,7 +18,8 @@ class NitrobenzeneOrientation:
         """
         self.symbols = symbols
         self.field_hat = np.asarray(field_vector, dtype=float)
-        self.field_hat /= np.linalg.norm(self.field_hat)
+        self.normalized_field_hat = self.field_hat / np.linalg.norm(self.field_hat)
+        
 
         # Atom indices
         self.C_indices = [i for i, s in enumerate(symbols) if s == "C"]
@@ -74,8 +75,8 @@ class NitrobenzeneOrientation:
         """
         x_hat, z_hat = self._compute_vectors(coords_bohr)
 
-        cos_phi = np.dot(x_hat, self.field_hat)
-        cos_theta = np.dot(z_hat, self.field_hat)
+        cos_phi = np.dot(x_hat, self.normalized_field_hat)
+        cos_theta = np.dot(z_hat, self.normalized_field_hat)
 
         # Numerical safety
         cos_phi = np.clip(cos_phi, -1.0, 1.0)

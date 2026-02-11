@@ -74,10 +74,22 @@ class CQEDRHFSCF:
         S = np.asarray(self.mints.ao_overlap())
     
         mu_ao = np.asarray(self.mints.ao_dipole())
+        mu_el = np.array([2 * oe.contract("pq,pq->", mu_ao[i], D) for i in range(3)])
 
         mu_nuc = np.array([mol.nuclear_dipole()[0], mol.nuclear_dipole()[1], mol.nuclear_dipole()[2]])
+        d_el_exp = np.dot(self.lambda_vector, mu_el)
+        d_nuc_exp = np.dot(self.lambda_vector, mu_nuc)
+        d_exp = d_el_exp + d_nuc_exp
         d_ao = sum(self.lambda_vector[i] * mu_ao[i] for i in range(3))
 
+        #print(f"Initial dipole moment (electronic): {mu_el}")
+        #print(f"Initial dipole moment (nuclear): {mu_nuc}")
+        #print(f"Initial dipole moment (total): {mu_el + mu_nuc}")
+        #print(f"Initial d_el_exp: {d_el_exp}")
+        #print(f"Initial d_nuc_exp: {d_nuc_exp}")
+        #print(f"Initial d_exp: {d_exp}")
+        #print(f"Lambda vector: {self.lambda_vector}")
+        #print(f"Norm of lambda vector: {np.linalg.norm(self.lambda_vector)}")
         # Quadrupole
         Q = [np.asarray(x) for x in self.mints.ao_quadrupole()]
         Q_PF = (
@@ -97,7 +109,13 @@ class CQEDRHFSCF:
         A = np.asarray(A)
 
         Enuc = mol.nuclear_repulsion_energy()
+        #print("E_Nuc from within CQEDRHFSCF: ", Enuc)
 
+        E_1e = oe.contract("pq,pq->", 2 * H, D)
+        #print(f"Initial QED one-electron energy: {E_1e:.10f}")
+        E_1ce = oe.contract("pq,pq->", H0, D)
+        #print(f"Initial one-electron energy (no cavity): {E_1ce:.10f}")
+        
         diis = DIISSubspace(max_dim=8)
         Eold = 0.0
 

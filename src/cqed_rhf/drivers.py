@@ -2,6 +2,7 @@ import psi4
 import numpy as np
 from scipy.optimize import minimize
 import time
+psi4.core.set_output_file("MD_test.out", append=False)
 
 from .utils import (
     build_psi4_geometry,
