@@ -73,7 +73,7 @@ def test_lambda_zero_reproduces_psi4_rhf():
         omega=omega,
     )
 
-    opt_cqed = bfgs_optimize(
+    opt_cqed, _od = bfgs_optimize(
         calculator=calc,
         geometry=h2o_string,
         canonical="exact",
