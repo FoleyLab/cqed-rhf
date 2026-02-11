@@ -26,6 +26,7 @@ def initialize_md_from_geometry(geometry_string):
     mol : psi4.core.Molecule
     """
     mol = psi4.geometry(geometry_string)
+    
 
     natom = mol.natom()
     symbols = [mol.symbol(i) for i in range(natom)]

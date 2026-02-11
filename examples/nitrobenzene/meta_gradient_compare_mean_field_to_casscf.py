@@ -3,6 +3,10 @@ import psi4
 
 from cqed_rhf import CQEDRHFCalculator
 
+# Energy and Gradient for meta-CAS(8e,8o)/6-311G* with 2 photonic Fock states using full integrals
+# from Nam's code
+casscf_energy = -3006.175906038858
+
 casscf_gradient = np.array([
     [-0.0001034324, -0.0008398526,  0.0014513293],
     [ 0.0034629473, -0.0095585074, -0.0003296254],
@@ -51,38 +55,45 @@ symmetry c1
 def run():
     geometry = make_geometry(meta_coords)
 
-    field_vectors = {
-        "diag":   [0.078, 0.055, 0.027],
+    field_vector = np.array([0.078, 0.055, 0.027])
+    
+
+    basis_set ="6-311G*"
+
+
+    psi4_options = {
+        "basis": basis_set,
+        "scf_type": "df",
+        "e_convergence": 1e-12,
+        "d_convergence": 1e-12,
     }
 
-    basis_sets = ["6-31G", "6-311G*"]
 
-    for basis in basis_sets:
-        print(f"\n===== META | basis = {basis} =====")
+    calc = CQEDRHFCalculator(
+        lambda_vector=field_vector,
+        psi4_options=psi4_options,
+        omega=0.1,
+        density_fitting=True,
+        charge=1,
+        multiplicity=1
+    )
 
-        psi4_options = {
-            "basis": basis,
-            "scf_type": "df",
-            "e_convergence": 1e-12,
-            "d_convergence": 1e-12,
-        }
+    E, grad, _ = calc.energy_and_gradient(
+        geometry,
+        canonical="psi4",
+    )
 
-        for label, lam in field_vectors.items():
-            calc = CQEDRHFCalculator(
-                lambda_vector=lam,
-                psi4_options=psi4_options,
-                omega=0.1,
-            )
+    print(f"QED-RHF Energy (Ha): {E:.10f}")
+    print(f"CAS(8e,8o) Energy (Ha): {casscf_energy:.10f}")
+    print(f"Energy Difference (Ha): {E - casscf_energy:.10f}")
+    print(f"QED-RHF Gradient Norm (Ha/bohr): {np.linalg.norm(grad):.6e}")
+    print(f"CAS(8e,8o) Gradient Norm (Ha/bohr): {np.linalg.norm(casscf_gradient):.6e}")
+    print(f"QED-RHF Gradient:\n{grad}")
+    print(f"CAS(8e,8o) Gradient:\n{casscf_gradient}")
+    print(f"Gradient Difference:\n{grad - casscf_gradient}")
+    print(f"Gradient Difference Norm (Ha/bohr): {np.linalg.norm(grad - casscf_gradient):.6e}")
 
-            E, grad, _ = calc.energy_and_gradient(
-                geometry,
-                canonical="psi4",
-            )
 
-            print(f"\nField: {label}  lambda={lam}")
-            print(f"Energy (Ha): {E:.10f}")
-            print(f"|Grad| (Ha/bohr): {np.linalg.norm(grad):.6e}")
-            print(grad)
 
 if __name__ == "__main__":
     run()
