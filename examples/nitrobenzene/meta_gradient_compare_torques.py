@@ -5,6 +5,49 @@ from cqed_rhf import CQEDRHFCalculator
 from cqed_rhf.observables.nitrobenzene_orientation import NitrobenzeneOrientation
 from cqed_rhf.observables.torque_tracker import RotationalProjectionObserver
 
+def generate_field_vector_from_theta_and_phi(theta, phi):
+    """
+    Generate a unit field vector from spherical coordinates.
+
+    Parameters:
+    -----------
+    theta : float
+        Polar angle in degrees (0° = +z axis, 90° = xy-plane, 180° = -z axis)
+    phi : float
+        Azimuthal angle in degrees (0° = +x axis, 90° = +y axis)
+
+    Returns:
+    --------
+    array : Field vector [x, y, z] as a unit vector
+
+    Spherical to Cartesian conversion:
+        x = sin(θ) cos(φ)
+        y = sin(θ) sin(φ)
+        z = cos(θ)
+    """
+    # Convert degrees to radians
+    theta_rad = np.radians(theta)
+    phi_rad = np.radians(phi)
+
+    # Compute Cartesian components
+    x = np.sin(theta_rad) * np.cos(phi_rad)
+    y = np.sin(theta_rad) * np.sin(phi_rad)
+    z = np.cos(theta_rad)
+
+    return np.array([x, y, z])
+
+# Example: Generate field vector
+theta_central = 74.1  # 74.1° from z-axis
+phi_central = 35.0    # 35° from x-axis in xy-plane
+d_alpha = 1.0 # deviation angle in degrees
+
+# pre-compute different field vectors for finite differences of QED-RHF energy wrt theta and phi
+field_vector_center = generate_field_vector_from_theta_and_phi(theta_central, phi_central)
+field_vector_theta_plus = generate_field_vector_from_theta_and_phi(theta_central + d_alpha, phi_central)
+field_vector_theta_minus = generate_field_vector_from_theta_and_phi(theta_central - d_alpha, phi_central)
+field_vector_phi_plus = generate_field_vector_from_theta_and_phi(theta_central, phi_central + d_alpha)
+field_vector_phi_minus = generate_field_vector_from_theta_and_phi(theta_central, phi_central - d_alpha)
+
 
 # -----------------------------
 # External CAS data
@@ -77,8 +120,9 @@ def run():
         "d_convergence": 1e-12,
     }
 
+    # do calculation with central field vector to get energy and gradient for torque projections from analytical gradients and projections
     calc = CQEDRHFCalculator(
-        lambda_vector=field_vector,
+        lambda_vector=field_vector_center,
         #molecule_string=geometry,
         psi4_options=psi4_options,
         omega=0.1,
@@ -115,6 +159,20 @@ def run():
     qed_rot = projector.observe(coords_bohr, grad_qed)
     cas_rot = projector.observe(coords_bohr, casscf_gradient)
 
+    # now perform finite difference gradient for explicit displacements in theta and phi directions for QED-RHF to compare with the projection results from the analytical gradient
+    ## update lambda_vector in calculator for finite difference points
+    calc.lambda_vector = field_vector_theta_plus
+    E_theta_plus = calc.energy(geometry)
+    calc.lambda_vector = field_vector_theta_minus
+    E_theta_minus = calc.energy(geometry)
+    dE_dtheta_fd = (E_theta_plus - E_theta_minus) / (2 * d_alpha * np.pi / 180)
+
+    calc.lambda_vector = field_vector_phi_plus
+    E_phi_plus = calc.energy(geometry)
+    calc.lambda_vector = field_vector_phi_minus
+    E_phi_minus = calc.energy(geometry)
+    dE_dphi_fd = (E_phi_plus - E_phi_minus) / (2 * d_alpha * np.pi / 180)
+
     # ---- Output ----
     print("\n================ ENERGY COMPARISON ================")
     print(f"QED-RHF Energy (Ha): {E:.10f}")
@@ -127,9 +185,9 @@ def run():
     print(f"Difference norm: {np.linalg.norm(grad_qed - casscf_gradient):.6e}")
 
     print("\n================ ROTATIONAL PROJECTIONS ===========")
-    print("                QED-RHF            CAS")
-    print(f"dE/dphi     {qed_rot['dE_dphi']: .6e}   {cas_rot['dE_dphi']: .6e}")
-    print(f"dE/dtheta   {qed_rot['dE_dtheta']: .6e}   {cas_rot['dE_dtheta']: .6e}")
+    print("                QED-RHF            FD-QED-RHF                 CAS")
+    print(f"dE/dphi     {qed_rot['dE_dphi']: .6e}    {dE_dphi_fd: .6e}    {cas_rot['dE_dphi']: .6e}")
+    print(f"dE/dtheta   {qed_rot['dE_dtheta']: .6e}   {dE_dtheta_fd: .6e}   {cas_rot['dE_dtheta']: .6e}")
 
     print("\nDifference in rotational components:")
     print(f"Δ(dE/dphi)   = {qed_rot['dE_dphi'] - cas_rot['dE_dphi']: .6e}")
