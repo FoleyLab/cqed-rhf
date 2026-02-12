@@ -134,6 +134,10 @@ def run():
     print("\nDifference in rotational components:")
     print(f"Δ(dE/dphi)   = {qed_rot['dE_dphi'] - cas_rot['dE_dphi']: .6e}")
     print(f"Δ(dE/dtheta) = {qed_rot['dE_dtheta'] - cas_rot['dE_dtheta']: .6e}")
+    print(f"Full Results for qed")
+    print(qed_rot)
+    print(f"Full Results for cas")
+    print(cas_rot)
 
 
 if __name__ == "__main__":
