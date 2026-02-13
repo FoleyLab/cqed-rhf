@@ -154,7 +154,7 @@ def velocity_verlet_md(
         print(f"Starting step {step} at {t5:.2f} seconds"   )
 
         # Half-step velocity update
-        velocities -= 0.5 * dt * forces / masses[:, None]
+        velocities += 0.5 * dt * forces / masses[:, None]
 
         # Position update (bohr)
         coords_bohr += dt * velocities
@@ -173,7 +173,7 @@ def velocity_verlet_md(
         forces = -grad
 
         # Final half-step velocity update
-        velocities -= 0.5 * dt * forces / masses[:, None]
+        velocities += 0.5 * dt * forces / masses[:, None]
 
         # ---- Observers ----
         for obs in observers:
