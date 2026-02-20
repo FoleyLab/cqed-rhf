@@ -119,9 +119,12 @@ symmetry c1
     # ----------------------------
     # Build task list (skip redundant phi at theta=0/180)
     # ----------------------------
-    theta_list = np.arange(0, 181, 2)
-    phi_list   = np.arange(0, 361, 2)
-
+    #theta_list = np.linspace(0np.arange(0, 181, 2)
+    #phi_list   = np.arange(0, 361, 2)
+    N_th = 25
+    N_ph = 25
+    theta_list = np.linspace(0, 180, N_th)
+    phi_list = np.linspace(0, 360, N_ph)
     tasks = [
         (theta, phi, ortho_string, psi4_options, omega)
         for theta in theta_list
