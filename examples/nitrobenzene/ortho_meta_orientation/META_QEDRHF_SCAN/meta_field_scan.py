@@ -96,7 +96,7 @@ calculator = CQEDRHFCalculator(
     psi4_options=psi4_options,
     omega=omega,
     density_fitting=True,
-    charge=0,
+    charge=1,
     multiplicity=1
 )
 
