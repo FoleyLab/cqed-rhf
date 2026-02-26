@@ -11,10 +11,12 @@
 - **Ortho-brominated:** `examples/nitrobenzene/ortho_meta_orientation/CCSD_DATA/ortho_ccsd_energies.txt`
 - **Meta-brominated:** `examples/nitrobenzene/ortho_meta_orientation/CCSD_DATA/meta_ccsd_energies.txt`
 
+> ⚠️ **Note:** I do not have the QED-RHF energies for these species readily available, but you can use the previous ortho_field_scan.py and meta_field_scan.py to generate them, this calculation would be feasible on a desktop.
+
 ### QED-RHF
 - **Nitrobenzene (unsubstituted):** `examples/nitrobenzene/ortho_meta_orientation/CCSD_DATA/nitrobenzene_rhf_energies.txt`
 
-> ⚠️ **Note:** QED-CCSD energies for unsubstituted nitrobenzene on the same θ/φ grid as the QED-RHF data are not yet available.
+> ⚠️ **Note:** QED-CCSD energies for unsubstituted nitrobenzene on the same θ/φ grid as the QED-RHF data are not yet available, one would need to run Exachem on perlmutter to get these.
 
 ## MD Scripts
 - **Nitrobenzene (unsubstituted):** `examples/nitrobenzene/ortho_meta_orientation/un_brominated/nitrobenzene_tracker.py`
