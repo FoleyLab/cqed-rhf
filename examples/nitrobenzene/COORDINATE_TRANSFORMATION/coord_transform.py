@@ -51,7 +51,7 @@ AMU_TO_KG = 1.66053906660e-27
 ANG_TO_M = 1e-10
 BOHR_TO_ANG = 0.52917721090  # Psi4 uses this for a.u. conversions
 ANG_TO_BOHR = 1.0 / BOHR_TO_ANG
-TOTAL_CHARGE = 1.0      # This species is a cation
+TOTAL_CHARGE = 0.0      # This species is a cation
 
 # --- Load Data ---
 file_unshifted = "nitro_coordinates.txt"
