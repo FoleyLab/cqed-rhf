@@ -52,24 +52,25 @@ field_vector = generate_field_vector_from_theta_and_phi(theta, phi) * 0.1  # sca
 print(f"Field vector for θ={theta}°, φ={phi}°: {field_vector}")
 
 # ----------------------------
-# Molecular geometry (ortho)
+# Molecular geometry (para)
 # ----------------------------
-nitro_string = """
-0 1
-         C           -1.885946870148     1.189583649403    -0.119726128149
-         C           -0.498436150781     1.207756989720    -0.095587674731
-         C            0.177022900609     0.001244416404     0.003170781601
-         C           -2.570320810975    -0.018930814056    -0.046076352491
-         H           -2.433490753919     2.122014686561    -0.196502462215
-         H            0.061742696521     2.131508866859    -0.151149504465
-         H           -3.654760225882    -0.026965279238    -0.065539508188 
-         N            1.653234989788     0.012187306043     0.029557107619  
-         O            2.221533450190    -1.057060327273     0.115433821878  
-         O            2.208198822578     1.089819744626    -0.036210769804    
-         C           -1.871287950510    -1.217279026698     0.052462992898    
-         H           -2.407539508613    -2.157651159151     0.109753013519    
-         C           -0.483684066407    -1.215092211065     0.078168902711    
-         H            0.087632738087    -2.130465296765     0.154596572701     
+para_string = """
+1 1
+         C           -0.511618296797     1.244386024531     0.732140048697
+         C            0.856500593203     1.251903714531     0.717948218697
+         C            1.524118723203     0.024661924531     0.713927788697
+         H           -1.071804396797     2.172682314531     0.745925708697
+         H            1.436128963203     2.163921874531     0.712099008697
+         N            3.008539583203     0.046097104531     0.698823798697
+         O            3.575097303203    -1.082768165469     0.699174708697
+         O            3.542114363203     1.190870854531     0.689202018697
+         C           -0.475464946797    -1.253402765469     0.742118638697
+         H           -1.008574426797    -2.197377955469     0.762945788697
+         C            0.892227703203    -1.221407805469     0.728065818697
+         H            1.498048423203    -2.116244695469     0.729653208697
+         C           -1.267906576797    -0.015841805469     0.712127418697
+         H           -2.116520796797    -0.025293215469     1.403161498697
+         BR          -2.114966986797    -0.034666925469    -1.121874081303
 units angstrom
 no_reorient
 no_com
@@ -88,7 +89,7 @@ psi4_options = {
 }
 
 psi4.set_memory("24 GB")
-psi4.core.set_output_file("nitrobenzene.out", False)
+psi4.core.set_output_file("para_md.out", False)
 omega = 0.06615  # cavity frequency in atomic units (corresponding to ~1.8 eV)
 
 # ----------------------------
@@ -107,13 +108,13 @@ calculator = CQEDRHFCalculator(
 # Build orientation tracker
 # ----------------------------
 # We need initial coords + symbols for setup
-mol = psi4.geometry(nitro_string)
+mol = psi4.geometry(para_string)
 psi4.set_options(psi4_options)
 # compute psi4 rhf energy for initial geometry
 e_rhf_1 = psi4.energy("scf", molecule=mol)
 print(f"Initial RHF energy: {e_rhf_1:.6f} Hartree")
 # use calculator to run a single point and get initial energy and forces
-e_cqed_1 = calculator.energy(nitro_string)
+e_cqed_1 = calculator.energy(para_string)
 print(f"Initial CQED-RHF energy: {e_cqed_1:.6f} Hartree")
 
 
@@ -130,15 +131,15 @@ field_vector_theta_180 = generate_field_vector_from_theta_and_phi(180, 0) * 0.1
 
 # update calculator with field vector for theta = 0 and compute energy
 calculator.lambda_vector = field_vector_theta_0
-c_cqed_theta_0 = calculator.energy(nitro_string)
+c_cqed_theta_0 = calculator.energy(para_string)
 
 # update calculator with field vector for theta = 180 and compute energy
 calculator.lambda_vector = field_vector_theta_180
-c_cqed_theta_180 = calculator.energy(nitro_string)
+c_cqed_theta_180 = calculator.energy(para_string)
 
 
 # open file for writing
-with open("nitrobenzene_field_scan_results.txt", "w") as f:
+with open("para_field_scan_results.txt", "w") as f:
     for theta in theta_list:
         for phi in phi_list:
             field_vector = generate_field_vector_from_theta_and_phi(theta, phi) * 0.1  # scale by field strength
@@ -151,7 +152,7 @@ with open("nitrobenzene_field_scan_results.txt", "w") as f:
                 e_cqed = c_cqed_theta_180
             else:   
                 calculator.lambda_vector = field_vector
-                e_cqed = calculator.energy(nitro_string)
+                e_cqed = calculator.energy(para_string)
             print(f"{theta:3f} {phi:3f} {field_vector[0]: .4f} {field_vector[1]: .4f} {field_vector[2]: .4f} {e_cqed:.12f}")
             f.write(f"{theta:3f} {phi:3f} {field_vector[0]: .4f} {field_vector[1]: .4f} {field_vector[2]: .4f} {e_cqed:.12f}\n")
 

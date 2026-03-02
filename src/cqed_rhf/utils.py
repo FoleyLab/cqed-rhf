@@ -56,7 +56,7 @@ def build_psi4_geometry(coords, symbols, charge=0, multiplicity=1, units="angstr
     #lines.append("1 1") # charge and multiplicity (default to singlet)
     lines.append("units angstrom")
     lines.append("no_reorient")
-    lines.append("no_com")
+    #lines.append("no_com") #<-- probably want center of mass centering to avoid drift
     lines.append(f"symmetry {symmetry}")
 
     return "\n".join(lines)
