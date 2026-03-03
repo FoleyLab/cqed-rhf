@@ -18,19 +18,4 @@
 
 Use to generate Exachem input files, also contains visualizer to visually inspect structure before creating input.
 
-> ⚠️ **Note:** I do not have the QED-RHF energies for these species readily available, but you can use the previous ortho_field_scan.py and meta_field_scan.py to generate them, this calculation would be feasible on a desktop.
 
-### QED-RHF
-- **Nitrobenzene (unsubstituted):** `examples/nitrobenzene/ortho_meta_orientation/CCSD_DATA/nitrobenzene_rhf_energies.txt`
-
-> ⚠️ **Note:** QED-CCSD energies for unsubstituted nitrobenzene on the same θ/φ grid as the QED-RHF data are not yet available, one would need to run Exachem on perlmutter to get these.
-
-## MD Scripts
-- **Nitrobenzene (unsubstituted):** `examples/nitrobenzene/ortho_meta_orientation/un_brominated/nitrobenzene_tracker.py`
-
-## MD Output
-- **Nitrobenzene (unsubstituted):** `examples/nitrobenzene/ortho_meta_orientation/un_brominated/nitrobenzene.xyz`
-
-## ExaChem QED-CCSD Input Generation
-Jupyter notebook to generate ExaChem QED-CCSD inputs for different θ and φ values. Works for ortho, meta, or para species; coordinates can be easily updated for unsubstituted nitrobenzene.
-- `examples/nitrobenzene/ortho_meta_orientation/CCSD_DATA/CCSD_INPUT_GENERATION_SCRIPT/write_exachem_qedcc_input.ipynb`
