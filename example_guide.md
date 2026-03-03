@@ -1,7 +1,7 @@
 # Example Guide: Energy Scans and MD with CQED-RHF
 
 ## Energy Scan Scripts (θ and φ grid)
-- **Nitrobenzene (unsubstituted):** [`examples/nitrobenzene/NITRO/nitrobenzene_field_scan.py`](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/META/meta_field_scan.py)
+- **[Nitrobenzene (unsubstituted)](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/META/meta_field_scan.py):** `examples/nitrobenzene/NITRO/nitrobenzene_field_scan.py`
 - **Ortho-brominated:** `examples/nitrobenzene/ORTHO/ortho_field_scan.py`
 - **Meta-brominated:** `examples/nitrobenzene/META/meta_field_scan.py`
 - **Para-brominated:** `examples/nitrobenzene/PARA/para_field_scan.py`
