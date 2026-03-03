@@ -2,9 +2,9 @@
 
 ## Energy Scan Scripts (θ and φ grid)
 - **[Nitrobenzene (unsubstituted)](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/META/meta_field_scan.py):** `examples/nitrobenzene/NITRO/nitrobenzene_field_scan.py`
-- **Ortho-brominated:** `examples/nitrobenzene/ORTHO/ortho_field_scan.py`
-- **Meta-brominated:** `examples/nitrobenzene/META/meta_field_scan.py`
-- **Para-brominated:** `examples/nitrobenzene/PARA/para_field_scan.py`
+- **[Ortho-brominated](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/ORTHO/ortho_field_scan.py):** `examples/nitrobenzene/ORTHO/ortho_field_scan.py`
+- **[Meta-brominated](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/META/meta_field_scan.py):** `examples/nitrobenzene/META/meta_field_scan.py`
+- **[Para-brominated](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/PARA/para_field_scan.py):** `examples/nitrobenzene/PARA/para_field_scan.py`
 
 ## Existing Scan Data
 
