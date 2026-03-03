@@ -13,7 +13,8 @@
 - **[Para-brominated](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/PARA/para_field_scan.py):** `examples/nitrobenzene/PARA/para_field_scan.py`
 
 ## Exachem Input Generation
- - [Jupyter notebook](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/CCSD_INPUT_GENERATOR/write_exachem_qedcc_input_com_at_origin.ipynb): `examples/nitrobenzene/CCSD_INPUT_GENERATOR/write_exachem_qedcc_input_com_at_origin.ipynb`
+ - [Jupyter notebook](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/CCSD_INPUT_GENERATOR/write_exachem_qedcc_input_com_at_origin.ipynb)
+ - `examples/nitrobenzene/CCSD_INPUT_GENERATOR/write_exachem_qedcc_input_com_at_origin.ipynb`
 
 Use to generate Exachem input files, also contains visualizer to visually inspect structure before creating input.
 
