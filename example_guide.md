@@ -6,8 +6,16 @@
 - **[Meta-brominated](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/META/meta_field_scan.py):** `examples/nitrobenzene/META/meta_field_scan.py`
 - **[Para-brominated](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/PARA/para_field_scan.py):** `examples/nitrobenzene/PARA/para_field_scan.py`
 
+## MD Run Scripts
+- **[Nitrobenzene (unsubstituted)](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/META/meta_field_scan.py):** `examples/nitrobenzene/NITRO/nitrobenzene_field_scan.py`
+- **[Ortho-brominated](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/ORTHO/ortho_field_scan.py):** `examples/nitrobenzene/ORTHO/ortho_field_scan.py`
+- **[Meta-brominated](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/META/meta_field_scan.py):** `examples/nitrobenzene/META/meta_field_scan.py`
+- **[Para-brominated](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/PARA/para_field_scan.py):** `examples/nitrobenzene/PARA/para_field_scan.py`
+
 ## Exachem Input Generation
- - [Jupyter notebook](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/CCSD_INPUT_GENERATOR/write_exachem_qedcc_input_com_at_origin.ipynb) to generate Exachem input files, also contains visualizer to visually inspect structure before creating input.
+ - [Jupyter notebook](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/CCSD_INPUT_GENERATOR/write_exachem_qedcc_input_com_at_origin.ipynb): `examples/nitrobenzene/CCSD_INPUT_GENERATOR/write_exachem_qedcc_input_com_at_origin.ipynb`
+
+Use to generate Exachem input files, also contains visualizer to visually inspect structure before creating input.
 
 > ⚠️ **Note:** I do not have the QED-RHF energies for these species readily available, but you can use the previous ortho_field_scan.py and meta_field_scan.py to generate them, this calculation would be feasible on a desktop.
 
