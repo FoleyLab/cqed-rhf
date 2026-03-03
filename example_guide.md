@@ -6,11 +6,8 @@
 - **[Meta-brominated](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/META/meta_field_scan.py):** `examples/nitrobenzene/META/meta_field_scan.py`
 - **[Para-brominated](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/PARA/para_field_scan.py):** `examples/nitrobenzene/PARA/para_field_scan.py`
 
-## Existing Scan Data
-
-### QED-CCSD
-- **Ortho-brominated:** `examples/nitrobenzene/ortho_meta_orientation/CCSD_DATA/ortho_ccsd_energies.txt`
-- **Meta-brominated:** `examples/nitrobenzene/ortho_meta_orientation/CCSD_DATA/meta_ccsd_energies.txt`
+## Exachem Input Generation
+ - [Jupyter notebook](https://github.com/FoleyLab/cqed-rhf/blob/main/examples/nitrobenzene/CCSD_INPUT_GENERATOR/write_exachem_qedcc_input_com_at_origin.ipynb) to generate Exachem input files, also contains visualizer to visually inspect structure before creating input.
 
 > ⚠️ **Note:** I do not have the QED-RHF energies for these species readily available, but you can use the previous ortho_field_scan.py and meta_field_scan.py to generate them, this calculation would be feasible on a desktop.
 
