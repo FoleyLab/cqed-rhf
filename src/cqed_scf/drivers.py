@@ -98,8 +98,23 @@ def velocity_verlet_md(
         print("Initializing from geometry string...")
         print(geometry)
         coords_bohr, symbols, masses, mol = initialize_md_from_geometry(geometry)
-        calculator.charge = mol.molecular_charge()
-        calculator.multiplicity = mol.multiplicity()
+
+        # Check rather than overwrite, matching bfgs_optimize below.  Silently
+        # adopting the geometry's values would contradict that check, and would
+        # also push an open-shell multiplicity into a restricted config, which
+        # CQEDConfig now rejects -- surfacing as a ValueError from a property
+        # setter in the middle of a driver.
+        if mol.molecular_charge() != calculator.charge:
+            raise ValueError(
+                f"Charge mismatch between geometry ({mol.molecular_charge()}) "
+                f"and calculator ({calculator.charge})"
+            )
+
+        if mol.multiplicity() != calculator.multiplicity:
+            raise ValueError(
+                f"Multiplicity mismatch between geometry ({mol.multiplicity()}) "
+                f"and calculator ({calculator.multiplicity})"
+            )
 
     elif coords is not None and symbols is not None:
         print("Initializing from coords and symbols...")
